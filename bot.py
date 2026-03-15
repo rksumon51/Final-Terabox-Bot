@@ -1,15 +1,22 @@
 import os
 import requests
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+RAPID_API_KEY = os.getenv("RAPID_API_KEY")
 
-API_KEY = os.getenv("RAPID_API_KEY")
-API_HOST = "terabox-downloader-online-viewer-player-api.p.rapidapi.com"
+API_URL = "https://terabox-downloader-online-viewer-player-api.p.rapidapi.com/api/downloader"
+
+headers = {
+    "X-RapidAPI-Key": RAPID_API_KEY,
+    "X-RapidAPI-Host": "terabox-downloader-online-viewer-player-api.p.rapidapi.com"
+}
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📥 Send Terabox link")
+
 
 async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -19,33 +26,22 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
 
-        endpoint = "https://terabox-downloader-online-viewer-player-api.p.rapidapi.com/api/downloader"
-
-        headers = {
-            "X-RapidAPI-Key": API_KEY,
-            "X-RapidAPI-Host": API_HOST
-        }
-
         params = {
             "url": url
         }
 
-        r = requests.get(endpoint, headers=headers, params=params)
-
+        r = requests.get(API_URL, headers=headers, params=params)
         data = r.json()
 
-        if data["status"] == "success":
+        if "data" not in data:
+            await update.message.reply_text("❌ API error")
+            return
 
-            video = data["data"]["download_url"]
+        video = data["data"]["download_url"]
 
-            await update.message.reply_video(video)
-
-        else:
-
-            await update.message.reply_text("❌ Failed to fetch video")
+        await update.message.reply_video(video)
 
     except Exception as e:
-
         await update.message.reply_text(f"❌ Error: {e}")
 
 
