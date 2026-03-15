@@ -36,7 +36,7 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         video = link_data["download_link"]
 
-        webplayer = f"https://yourdomain.vercel.app/player.html?url={video}"
+        webplayer = f"https://final-terabox-bot.vercel.app/player.html?url={video}"
 
         buttons = [
             [InlineKeyboardButton("▶️ Watch Online", url=webplayer)],
