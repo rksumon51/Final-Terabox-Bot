@@ -42,4 +42,10 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-app.add_handler(CommandHandler("
+app.add_handler(CommandHandler("start", start))
+
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_link))
+
+print("Bot Running")
+
+app.run_polling()
