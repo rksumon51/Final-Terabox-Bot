@@ -28,8 +28,6 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
         r = requests.get(API_URL, headers=HEADERS, params=params)
         data = r.json()
 
-        print(data)  # debug log
-
         if data.get("status") != "success":
             await update.message.reply_text("❌ Failed to fetch video")
             return
@@ -41,7 +39,7 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {e}")
 
+
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle
+app.add_handler(CommandHandler("
