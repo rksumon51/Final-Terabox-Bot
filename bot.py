@@ -13,8 +13,10 @@ HEADERS = {
     "X-RapidAPI-Host": "terabox-downloader-online-viewer-player-api.p.rapidapi.com"
 }
 
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📥 Send Terabox link")
+
 
 async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -32,7 +34,22 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("❌ Failed to fetch video")
             return
 
-        video_url = data["data"]["dlink"]
+        video_url = None
+        d = data.get("data", {})
+
+        # possible API structures
+        if "dlink" in d:
+            video_url = d["dlink"]
+
+        elif "download_url" in d:
+            video_url = d["download_url"]
+
+        elif "structure" in d and len(d["structure"]) > 0:
+            video_url = d["structure"][0].get("dlink")
+
+        if not video_url:
+            await update.message.reply_text("❌ Failed to fetch video")
+            return
 
         await update.message.reply_video(video_url)
 
