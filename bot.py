@@ -1,11 +1,12 @@
 import os
 import requests
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-API = "https://api-production-359d.up.railway.app"
+API_KEY = os.getenv("RAPID_API_KEY")
+API_HOST = "terabox-downloader-online-viewer-player-api.p.rapidapi.com"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📥 Send Terabox link")
@@ -14,42 +15,39 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     url = update.message.text
 
-    msg = await update.message.reply_text("⏳ Processing...")
+    await update.message.reply_text("⏳ Processing...")
 
     try:
 
-        r = requests.post(f"{API}/generate_file", json={"url": url})
-        data = r.json()
+        endpoint = "https://terabox-downloader-online-viewer-player-api.p.rapidapi.com/api/downloader"
 
-        file = data["list"][0]
-
-        payload = {
-            "shareid": data["shareid"],
-            "uk": data["uk"],
-            "sign": data["sign"],
-            "timestamp": data["timestamp"],
-            "fs_id": file["fs_id"]
+        headers = {
+            "X-RapidAPI-Key": API_KEY,
+            "X-RapidAPI-Host": API_HOST
         }
 
-        r2 = requests.post(f"{API}/generate_link", json=payload)
-        link_data = r2.json()
+        params = {
+            "url": url
+        }
 
-        video = link_data["download_link"]
+        r = requests.get(endpoint, headers=headers, params=params)
 
-        webplayer = f"https://final-terabox-bot.vercel.app/player.html?url={video}"
+        data = r.json()
 
-        buttons = [
-            [InlineKeyboardButton("▶️ Watch Online", url=webplayer)],
-            [InlineKeyboardButton("⬇️ Download", url=video)]
-        ]
+        if data["status"] == "success":
 
-        await msg.edit_text(
-            "✅ Video Ready",
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
+            video = data["data"]["download_url"]
+
+            await update.message.reply_video(video)
+
+        else:
+
+            await update.message.reply_text("❌ Failed to fetch video")
 
     except Exception as e:
-        await msg.edit_text(f"❌ Error: {e}")
+
+        await update.message.reply_text(f"❌ Error: {e}")
+
 
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
