@@ -32,7 +32,7 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("❌ Failed to fetch video")
             return
 
-        video_url = data["data"]["download_url"]
+        video_url = data["data"]["dlink"]
 
         await update.message.reply_video(video_url)
 
