@@ -5,22 +5,34 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+API_KEY = os.getenv("TERABOX_API_KEY")
 
-PLAYER_URL = "https://final-terabox-bot.vercel.app/player.html"
+# ✅ শুধু domain রাখো (player.html না)
+PLAYER_URL = "https://final-terabox-bot.vercel.app"
 
 
+# ================= START =================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📥 Send Terabox link")
 
 
+# ================= MAIN =================
 async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text.strip()
     msg = await update.message.reply_text("⏳ Processing...")
 
     try:
-        api_url = f"https://terabox-downloader-api.vercel.app/api?url={url}"
+        # ✅ WORKING API
+        api_url = "https://xapiverse.com/api/terabox-pro"
 
-        res = requests.get(api_url, timeout=30)
+        headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        payload = {"url": url}
+
+        res = requests.post(api_url, json=payload, headers=headers, timeout=30)
 
         if res.status_code != 200:
             return await msg.edit_text(f"❌ API Error\n{res.text}")
@@ -28,15 +40,16 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
         data = res.json()
 
         if not data.get("success"):
-            return await msg.edit_text("❌ Failed")
+            return await msg.edit_text("❌ Failed to fetch video")
 
         file = data["data"]
 
-        download_url = file.get("download")
-        file_name = file.get("filename", "video.mp4")
+        download_url = file.get("download_url")
+        file_name = file.get("file_name", "video.mp4")
         size = file.get("size", "Unknown")
         thumb = file.get("thumbnail")
 
+        # ✅ PLAYER LINK
         encoded = urllib.parse.quote(download_url, safe="")
         player_link = f"{PLAYER_URL}?url={encoded}"
 
@@ -51,6 +64,19 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📦 Size: {size}
 """
 
+        # ছোট হলে direct video send
+        try:
+            if int(file.get("size_bytes", 0)) < 50 * 1024 * 1024:
+                await update.message.reply_video(
+                    video=download_url,
+                    caption=caption,
+                    reply_markup=InlineKeyboardMarkup(buttons)
+                )
+                return await msg.delete()
+        except:
+            pass
+
+        # thumbnail থাকলে photo
         if thumb:
             await update.message.reply_photo(
                 photo=thumb,
@@ -64,6 +90,7 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await msg.edit_text(f"❌ Error: {e}")
 
 
+# ================= RUN =================
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
