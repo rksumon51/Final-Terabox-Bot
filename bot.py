@@ -21,12 +21,15 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text.strip()
     msg = await update.message.reply_text("⏳ Processing...")
 
+    # 🔥 DEBUG (Railway log এ দেখাবে)
+    print("API_KEY =", API_KEY)
+
     try:
         api_url = "https://xapiverse.com/api/terabox-pro"
 
-        # ✅ FIXED HEADER
         headers = {
-            "xAPIverse-Key": API_KEY
+            "xAPIverse-Key": API_KEY,
+            "Content-Type": "application/json"
         }
 
         payload = {
@@ -34,6 +37,10 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
         }
 
         res = requests.post(api_url, json=payload, headers=headers, timeout=30)
+
+        # 🔥 DEBUG RESPONSE
+        print("STATUS:", res.status_code)
+        print("RESPONSE:", res.text)
 
         if res.status_code != 200:
             return await msg.edit_text(f"❌ API Error\n{res.text}")
