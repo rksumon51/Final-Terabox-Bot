@@ -7,7 +7,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 API_KEY = os.getenv("TERABOX_API_KEY")
 
-# ✅ শুধু domain রাখো (player.html না)
+# ✅ শুধু domain
 PLAYER_URL = "https://final-terabox-bot.vercel.app"
 
 
@@ -22,15 +22,16 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = await update.message.reply_text("⏳ Processing...")
 
     try:
-        # ✅ WORKING API
         api_url = "https://xapiverse.com/api/terabox-pro"
 
+        # ✅ FIXED HEADER
         headers = {
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
+            "xAPIverse-Key": API_KEY
         }
 
-        payload = {"url": url}
+        payload = {
+            "url": url
+        }
 
         res = requests.post(api_url, json=payload, headers=headers, timeout=30)
 
@@ -64,7 +65,7 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📦 Size: {size}
 """
 
-        # ছোট হলে direct video send
+        # ছোট হলে direct video
         try:
             if int(file.get("size_bytes", 0)) < 50 * 1024 * 1024:
                 await update.message.reply_video(
