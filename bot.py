@@ -6,42 +6,37 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# ✅ তোমার Vercel player URL
 PLAYER_URL = "https://final-terabox-bot.vercel.app/player.html"
 
 
-# ================= START =================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📥 Send Terabox link")
 
 
-# ================= MAIN HANDLER =================
 async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    url = update.message.text
+    url = update.message.text.strip()
     msg = await update.message.reply_text("⏳ Processing...")
 
     try:
-        # ✅ WORKING FREE API (no key লাগবে না)
-        api_url = f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}"
+        api_url = f"https://terabox-downloader-api.vercel.app/api?url={url}"
 
         res = requests.get(api_url, timeout=30)
 
         if res.status_code != 200:
-            return await msg.edit_text("❌ API Error")
+            return await msg.edit_text(f"❌ API Error\n{res.text}")
 
         data = res.json()
 
         if not data.get("success"):
-            return await msg.edit_text("❌ Failed to fetch video")
+            return await msg.edit_text("❌ Failed")
 
         file = data["data"]
 
-        download_url = file.get("download_url")
-        file_name = file.get("file_name", "video.mp4")
+        download_url = file.get("download")
+        file_name = file.get("filename", "video.mp4")
         size = file.get("size", "Unknown")
         thumb = file.get("thumbnail")
 
-        # ✅ PLAYER LINK (ENCODED)
         encoded = urllib.parse.quote(download_url, safe="")
         player_link = f"{PLAYER_URL}?url={encoded}"
 
@@ -56,19 +51,6 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📦 Size: {size}
 """
 
-        # ---------- TRY SEND VIDEO ----------
-        try:
-            if int(file.get("size_bytes", 0)) < 50 * 1024 * 1024:
-                await update.message.reply_video(
-                    video=download_url,
-                    caption=caption,
-                    reply_markup=InlineKeyboardMarkup(buttons)
-                )
-                return await msg.delete()
-        except:
-            pass
-
-        # ---------- SEND WITH THUMB ----------
         if thumb:
             await update.message.reply_photo(
                 photo=thumb,
@@ -82,7 +64,6 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await msg.edit_text(f"❌ Error: {e}")
 
 
-# ================= RUN =================
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
