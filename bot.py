@@ -5,7 +5,6 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-API_KEY = os.getenv("TERABOX_API_KEY")
 
 # ✅ তোমার Vercel player URL
 PLAYER_URL = "https://final-terabox-bot.vercel.app/player.html"
@@ -22,16 +21,10 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = await update.message.reply_text("⏳ Processing...")
 
     try:
-        api_url = "https://xapiverse.com/api/terabox-pro"
+        # ✅ WORKING FREE API (no key লাগবে না)
+        api_url = f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}"
 
-        headers = {
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        }
-
-        payload = {"url": url}
-
-        res = requests.post(api_url, json=payload, headers=headers, timeout=30)
+        res = requests.get(api_url, timeout=30)
 
         if res.status_code != 200:
             return await msg.edit_text("❌ API Error")
