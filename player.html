@@ -1,36 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<title>Video Player</title>
-
+<title>Player</title>
 <style>
-
-body{
-background:black;
-margin:0;
-}
-
-video{
-width:100%;
-height:100vh;
-}
-
+body{margin:0;background:black;}
+video{width:100%;height:100vh;}
 </style>
-
 </head>
-
 <body>
 
-<video id="player" controls autoplay></video>
+<video controls autoplay id="v"></video>
 
 <script>
-
-const params = new URLSearchParams(window.location.search);
-const url = params.get("url");
-
-document.getElementById("player").src = url;
-
+const url = new URLSearchParams(location.search).get("url");
+document.getElementById("v").src = url;
 </script>
 
 </body>
