@@ -7,7 +7,8 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 API_KEY = os.getenv("TERABOX_API_KEY")
 
-PLAYER_URL = "https://your-site.vercel.app/player.html"
+# ✅ তোমার Vercel player URL
+PLAYER_URL = "https://final-terabox-bot.vercel.app/player.html"
 
 
 # ================= START =================
@@ -47,7 +48,7 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
         size = file.get("size", "Unknown")
         thumb = file.get("thumbnail")
 
-        # player link encode
+        # ✅ PLAYER LINK (ENCODED)
         encoded = urllib.parse.quote(download_url, safe="")
         player_link = f"{PLAYER_URL}?url={encoded}"
 
